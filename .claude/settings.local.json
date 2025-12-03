@@ -5,7 +5,10 @@
       "Bash(bunx shadcn@latest add:*)",
       "Bash(bun add:*)",
       "Bash(bunx tsc:*)",
-      "Bash(bun remove:*)"
+      "Bash(bun remove:*)",
+      "Bash(gh pr create --title \"feat(retrospective): Add complete retrospective board application\" --body \"$(cat <<''EOF''\n## Beschrijving\n\nInitiële setup van ScrumKit - een real-time retrospective tool voor scrum teams. Deze PR bevat de complete applicatie voor het faciliteren van retrospectives met een Mad/Sad/Glad board structuur.\n\n## Slack Channel update\n\nNieuwe retrospective tool voor het team! Je kunt nu online retrospectives houden met real-time samenwerking. Iedereen kan items toevoegen, stemmen op belangrijke punten, en actiepunten aanmaken. De tool genereert ook automatisch een samenvatting van de retro.\n\n## Hoe test ik dit?\n\n1. Clone de repo en checkout deze branch\n2. Kopieer `.env.example` naar `.env` en vul de database URL en OpenAI API key in\n3. Run `bun install` om dependencies te installeren\n4. Run `bun run db:push` om de database schema te pushen\n5. Run `bun run dev` om de development server te starten\n6. Ga naar http://localhost:3000 en maak een nieuwe retrospective aan\n7. Test de volgende flows:\n   - Items toevoegen aan Mad/Sad/Glad kolommen\n   - Stemmen op items (max 3 stemmen per gebruiker)\n   - Actiepunten aanmaken met assignee\n   - Rapport genereren met AI samenvatting\n\n## Wanneer kan dit live?\n\nDit is de eerste versie van de applicatie. Kan live zodra:\n- Database (PostgreSQL) is geconfigureerd in productie\n- OpenAI API key is ingesteld voor rapportage functionaliteit\n- Environment variabelen zijn geconfigureerd\n\n## Bijzonderheden\n\n- **Tech stack**: Next.js 16, React 19, Tailwind CSS 4, Drizzle ORM\n- **Real-time**: Server-Sent Events voor live updates tussen deelnemers\n- **AI**: OpenAI integratie voor het genereren van retro samenvattingen\n- **Database**: PostgreSQL met Drizzle ORM voor type-safe queries\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\nEOF\n)\")",
+      "Bash(grep:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
