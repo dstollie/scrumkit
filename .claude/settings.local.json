@@ -11,7 +11,8 @@
       "Bash(npx shadcn@latest init:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(bun add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

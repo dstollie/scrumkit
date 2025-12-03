@@ -11,7 +11,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test:session": "bun run scripts/create-test-session.ts"
   },
   "dependencies": {
     "@liveblocks/client": "^3.11.0",
