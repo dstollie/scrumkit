@@ -16,7 +16,7 @@
 
 ---
 
-**FV1.1:** Next.js 16 Project Setup met Bun
+[DONE - FV1.1] **FV1.1:** Next.js 16 Project Setup met Bun
 
 Het project moet worden opgezet met Next.js 16 (App Router), TypeScript, en Bun als runtime en package manager.
 
@@ -41,7 +41,7 @@ Vereiste configuraties:
 
 ---
 
-**FV1.2:** Shadcn/UI Integratie met v0.dev Component Generatie
+[DONE - FV1.2] **FV1.2:** Shadcn/UI Integratie met v0.dev Component Generatie
 
 Het project gebruikt Shadcn/UI als component library met Tailwind CSS voor styling. Voor complexere UI componenten wordt v0.dev gebruikt om professioneel gestylde componenten te genereren.
 
@@ -72,7 +72,7 @@ Werkwijze:
 
 ---
 
-**FV1.3:** Database Setup met Vercel Postgres
+[DONE - FV1.3] **FV1.3:** Database Setup met Vercel Postgres
 
 Het project gebruikt Vercel Postgres als database met Drizzle ORM voor type-safe queries.
 
@@ -92,7 +92,7 @@ Drizzle ORM versie: **0.44.7** (stabiel)
 
 ---
 
-**FV1.4:** Real-time Infrastructuur met Liveblocks
+[DONE - FV1.4] **FV1.4:** Real-time Infrastructuur met Liveblocks
 
 Het project gebruikt Liveblocks voor real-time functionaliteit. Liveblocks is Vercel's aanbevolen partner voor real-time collaboration.
 
@@ -110,7 +110,7 @@ Liveblocks voordelen:
 
 ---
 
-**FV1.5:** OpenAI Integratie
+[DONE - FV1.5] **FV1.5:** OpenAI Integratie
 
 Het project integreert OpenAI SDK voor AI-gegenereerde retrospective rapporten.
 
@@ -130,7 +130,7 @@ Configuratie:
 
 ---
 
-**FV2.1:** Retrospective Sessie Aanmaken
+[DONE - FV2.1] **FV2.1:** Retrospective Sessie Aanmaken
 
 Een gebruiker moet een nieuwe retrospective sessie kunnen aanmaken voor een sprint.
 
@@ -148,7 +148,7 @@ Output:
 
 ---
 
-**FV2.2:** Input Toevoegen door Teamleden
+[DONE - FV2.2] **FV2.2:** Input Toevoegen door Teamleden
 
 Elk teamlid moet input kunnen toevoegen aan de retrospective in categorieën.
 
@@ -167,7 +167,7 @@ Per input item:
 
 ---
 
-**FV2.3:** Real-time Synchronisatie met Liveblocks
+[DONE - FV2.3] **FV2.3:** Real-time Synchronisatie met Liveblocks
 
 Alle wijzigingen moeten real-time gesynchroniseerd worden tussen alle deelnemers via Liveblocks.
 
@@ -188,7 +188,7 @@ Presence awareness (Liveblocks native):
 
 ---
 
-**FV2.4:** Stem Systeem
+[DONE - FV2.4] **FV2.4:** Stem Systeem
 
 Teamleden moeten kunnen stemmen op input items om prioriteit te bepalen.
 
@@ -201,7 +201,7 @@ Stemregels:
 
 ---
 
-**FV2.5:** Automatische Ordening op Stemmen
+[DONE - FV2.5] **FV2.5:** Automatische Ordening op Stemmen
 
 Items moeten automatisch geordend worden op basis van het aantal stemmen.
 
@@ -222,7 +222,7 @@ Weergave:
 
 ---
 
-**FV3.1:** Discussie Modus per Item
+[DONE - FV3.1] **FV3.1:** Discussie Modus per Item
 
 Na de stemfase moet elk item besproken kunnen worden met vastlegging van de discussie.
 
@@ -241,7 +241,7 @@ Facilitator controls:
 
 ---
 
-**FV3.2:** Actiepunten Registratie
+[DONE - FV3.2] **FV3.2:** Actiepunten Registratie
 
 Concrete actiepunten moeten vastgelegd kunnen worden tijdens de discussie.
 
@@ -259,7 +259,7 @@ Per actiepunt:
 
 ---
 
-**FV4.1:** Rapport Tab in Retrospective Interface
+[DONE - FV4.1] **FV4.1:** Rapport Tab in Retrospective Interface
 
 Het gegenereerde rapport moet worden gepresenteerd in een dedicated tab binnen de retrospective interface.
 
@@ -279,7 +279,7 @@ Rapport tab features:
 
 ---
 
-**FV4.2:** Rapport Opslag & Real-time Synchronisatie
+[DONE - FV4.2] **FV4.2:** Rapport Opslag & Real-time Synchronisatie
 
 Na generatie moet het rapport worden opgeslagen en real-time zichtbaar zijn voor alle deelnemers in de sessie.
 
@@ -299,7 +299,7 @@ Real-time synchronisatie:
 
 ---
 
-**FV4.3:** Automatische Rapport Generatie
+[DONE - FV4.3] **FV4.3:** Automatische Rapport Generatie
 
 Na afloop van de retrospective moet een AI-gegenereerd rapport beschikbaar zijn.
 
@@ -315,7 +315,7 @@ Rapport taal: **Nederlands** (standaard, configureerbaar)
 
 ---
 
-**FV4.4:** Rapport Formaten
+[DONE - FV4.4] **FV4.4:** Rapport Formaten
 
 Het rapport moet in meerdere formaten beschikbaar zijn.
 
@@ -327,7 +327,7 @@ Ondersteunde formaten:
 
 ---
 
-**FV4.5:** AI Prompt Configuratie
+[DONE - FV4.5] **FV4.5:** AI Prompt Configuratie
 
 De AI prompt voor rapport generatie moet configureerbaar zijn.
 
@@ -344,7 +344,7 @@ Configureerbare aspecten:
 
 ---
 
-### TO1: Project Structuur
+[DONE - TO1] ### TO1: Project Structuur
 
 Aanbevolen mappenstructuur voor schaalbaarheid:
 
@@ -380,7 +380,7 @@ src/
 
 ---
 
-### TO2: Database Schema (Drizzle + Vercel Postgres)
+[DONE - TO2] ### TO2: Database Schema (Drizzle + Vercel Postgres)
 
 Kern entiteiten voor de retrospective feature:
 
@@ -446,7 +446,7 @@ export const retrospectiveReports = pgTable('retrospective_reports', {
 
 ---
 
-### TO3: Liveblocks Room Structuur
+[DONE - TO3] ### TO3: Liveblocks Room Structuur
 
 Aanbevolen room structuur voor real-time communicatie inclusief rapport:
 
@@ -548,7 +548,7 @@ export function ReportTab({ sessionId }: { sessionId: string }) {
 
 ---
 
-### TO5: API Route Structuur
+[DONE - TO5] ### TO5: API Route Structuur
 
 ```text
 /api/retrospective
@@ -576,7 +576,7 @@ export function ReportTab({ sessionId }: { sessionId: string }) {
 
 ---
 
-### TO6: Environment Variables
+[DONE - TO6] ### TO6: Environment Variables
 
 Vereiste environment variables:
 
