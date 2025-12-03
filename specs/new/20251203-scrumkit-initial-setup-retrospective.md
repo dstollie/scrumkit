@@ -66,6 +66,7 @@ v0.dev is Vercel's AI UI generator die perfect integreert met Next.js + Tailwind
 - Dashboard layouts
 
 Werkwijze:
+
 1. Genereer component op [v0.dev](https://v0.dev) met beschrijving
 2. Kopieer gegenereerde code naar `src/components/features/`
 3. Pas aan indien nodig
@@ -92,21 +93,26 @@ Drizzle ORM versie: **0.44.7** (stabiel)
 
 ---
 
-**FV1.4:** Real-time Infrastructuur met Liveblocks
+**FV1.4:** Real-time Infrastructuur met Server-Sent Events (SSE)
 
-Het project gebruikt Liveblocks voor real-time functionaliteit. Liveblocks is Vercel's aanbevolen partner voor real-time collaboration.
+Het project gebruikt Server-Sent Events (SSE) voor real-time functionaliteit. SSE is een native browser API die eenrichtings real-time communicatie van server naar client mogelijk maakt zonder externe dependencies.
 
-```bash
-bun add @liveblocks/client @liveblocks/react
-```
+**Geen extra packages nodig** - SSE werkt native met Next.js API routes.
 
-Liveblocks voordelen:
+SSE voordelen:
 
-- Officiële Vercel templates en documentatie
-- Native Vercel Postgres synchronisatie support
-- Presence awareness out-of-the-box
-- Conflict-free data store (Storage)
-- Gebouwd voor collaboration use-cases
+- Geen externe services of kosten
+- Native browser ondersteuning
+- Eenvoudige implementatie met Next.js API routes
+- Lichtgewicht en efficiënt
+- Automatische reconnect bij verbindingsverlies
+- Werkt perfect met Vercel serverless
+
+SSE architectuur:
+
+- **Server → Client:** SSE stream voor real-time updates
+- **Client → Server:** Reguliere POST/PATCH requests voor mutaties
+- Database als "source of truth" voor synchronisatie
 
 ---
 
@@ -167,24 +173,28 @@ Per input item:
 
 ---
 
-**FV2.3:** Real-time Synchronisatie met Liveblocks
+**FV2.3:** Real-time Synchronisatie met SSE
 
-Alle wijzigingen moeten real-time gesynchroniseerd worden tussen alle deelnemers via Liveblocks.
+Alle wijzigingen moeten real-time gesynchroniseerd worden tussen alle deelnemers via Server-Sent Events.
 
-Real-time events:
+Real-time events (via SSE):
 
-- Nieuwe input toegevoegd
-- Input gewijzigd/verwijderd
-- Stem toegevoegd/verwijderd
-- Discussie notities bijgewerkt
-- Deelnemer joined/left
-- **Rapport gegenereerd/bijgewerkt**
+- `item:created` - Nieuwe input toegevoegd
+- `item:updated` - Input gewijzigd
+- `item:deleted` - Input verwijderd
+- `vote:added` - Stem toegevoegd
+- `vote:removed` - Stem verwijderd
+- `discussion:updated` - Discussie notities bijgewerkt
+- `phase:changed` - Sessie fase gewijzigd
+- `report:generated` - Rapport gegenereerd
+- `participant:joined` - Deelnemer toegetreden
+- `participant:left` - Deelnemer vertrokken
 
-Presence awareness (Liveblocks native):
+Presence tracking:
 
+- Heartbeat mechanisme (elke 30 seconden)
 - Toon welke teamleden online zijn
-- Toon wie momenteel aan het typen is
-- Cursors van andere gebruikers (optioneel)
+- Automatische cleanup bij disconnect
 
 ---
 
@@ -265,7 +275,7 @@ Het gegenereerde rapport moet worden gepresenteerd in een dedicated tab binnen d
 
 Tab structuur:
 
-```
+```text
 [Bord] [Stemmen] [Discussie] [Rapport]
 ```
 
@@ -290,12 +300,12 @@ Opslag:
 - Bevat versie geschiedenis (optioneel voor v2)
 - Tijdstempel van generatie
 
-Real-time synchronisatie:
+Real-time synchronisatie (via SSE):
 
-- Bij rapport generatie: broadcast naar alle deelnemers via Liveblocks
+- Bij rapport generatie: `report:generated` event naar alle deelnemers
 - Rapport tab toont automatisch het nieuwste rapport
 - Indicator wanneer rapport wordt gegenereerd ("Rapport wordt gegenereerd...")
-- Notificatie aan deelnemers wanneer rapport beschikbaar is
+- Automatische refresh van rapport tab bij ontvangst van event
 
 ---
 
@@ -354,6 +364,18 @@ src/
 │   ├── (auth)/               # Auth-gerelateerde routes
 │   ├── (dashboard)/          # Dashboard routes
 │   ├── api/                  # API routes
+│   │   └── retrospective/
+│   │       ├── route.ts              # POST: nieuwe sessie
+│   │       └── [id]/
+│   │           ├── route.ts          # GET, PATCH, DELETE sessie
+│   │           ├── stream/
+│   │           │   └── route.ts      # SSE endpoint
+│   │           ├── items/
+│   │           │   └── route.ts      # Items CRUD
+│   │           ├── votes/
+│   │           │   └── route.ts      # Votes CRUD
+│   │           └── report/
+│   │               └── route.ts      # Rapport generatie
 │   └── retrospective/        # Retrospective feature routes
 │       └── [id]/
 │           └── page.tsx      # Retrospective sessie pagina met tabs
@@ -361,19 +383,23 @@ src/
 │   ├── ui/                   # Shadcn componenten
 │   └── features/             # Feature-specifieke componenten (v0.dev generated)
 │       ├── retrospective/
-│       │   ├── board.tsx         # Retrospective bord (v0.dev)
-│       │   ├── item-card.tsx     # Item kaart met stemmen (v0.dev)
-│       │   ├── voting-panel.tsx  # Stem paneel (v0.dev)
+│       │   ├── board.tsx             # Retrospective bord (v0.dev)
+│       │   ├── item-card.tsx         # Item kaart met stemmen (v0.dev)
+│       │   ├── voting-panel.tsx      # Stem paneel (v0.dev)
 │       │   ├── discussion-view.tsx
-│       │   └── report-tab.tsx    # Rapport tab weergave (v0.dev)
+│       │   └── report-tab.tsx        # Rapport tab weergave (v0.dev)
 │       └── shared/
 │           ├── presence-avatars.tsx  # Online gebruikers (v0.dev)
 │           └── phase-indicator.tsx
 ├── lib/
 │   ├── db/                   # Database schema & queries (Drizzle)
 │   ├── ai/                   # OpenAI integratie
-│   └── liveblocks/           # Liveblocks client setup
-├── hooks/                    # Custom React hooks
+│   └── sse/                  # SSE utilities
+│       ├── client.ts         # Client-side SSE hook
+│       └── server.ts         # Server-side SSE helpers
+├── hooks/
+│   ├── use-sse.ts            # SSE connection hook
+│   └── use-retrospective.ts  # Retrospective state hook
 ├── types/                    # TypeScript type definities
 └── utils/                    # Utility functies
 ```
@@ -434,115 +460,222 @@ export const actionItems = pgTable('action_items', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-// NIEUW: Rapport opslag
+// Rapport opslag
 export const retrospectiveReports = pgTable('retrospective_reports', {
   id: uuid('id').primaryKey().defaultRandom(),
   sessionId: uuid('session_id').references(() => retrospectiveSessions.id).unique(),
-  content: text('content').notNull(),           // Markdown inhoud
+  content: text('content').notNull(),
   generatedAt: timestamp('generated_at').defaultNow(),
-  generatedBy: varchar('generated_by', { length: 255 }), // Gebruiker die generatie triggerde
+  generatedBy: varchar('generated_by', { length: 255 }),
+});
+
+// Participant tracking voor presence
+export const sessionParticipants = pgTable('session_participants', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => retrospectiveSessions.id),
+  oderId: varchar('user_id', { length: 255 }).notNull(),
+  userName: varchar('user_name', { length: 255 }).notNull(),
+  lastSeen: timestamp('last_seen').defaultNow(),
+  isOnline: boolean('is_online').default(true),
 });
 ```
 
 ---
 
-### TO3: Liveblocks Room Structuur
+### TO3: SSE Implementatie
 
-Aanbevolen room structuur voor real-time communicatie inclusief rapport:
+**Server-side SSE Route:**
 
 ```typescript
-// src/lib/liveblocks/config.ts
-import { createClient } from "@liveblocks/client";
-import { createRoomContext } from "@liveblocks/react";
+// src/app/api/retrospective/[id]/stream/route.ts
+import { NextRequest } from 'next/server';
 
-const client = createClient({
-  publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!,
-});
+// In-memory store voor SSE connections (per sessie)
+const sessions = new Map<string, Set<ReadableStreamDefaultController>>();
 
-type Presence = {
-  cursor: { x: number; y: number } | null;
-  name: string;
-  isTyping: boolean;
-  currentTab: "board" | "voting" | "discussion" | "report";
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const sessionId = params.id;
+
+  const stream = new ReadableStream({
+    start(controller) {
+      // Voeg controller toe aan sessie
+      if (!sessions.has(sessionId)) {
+        sessions.set(sessionId, new Set());
+      }
+      sessions.get(sessionId)!.add(controller);
+
+      // Stuur initiële connectie bevestiging
+      const encoder = new TextEncoder();
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'connected' })}\n\n`));
+    },
+    cancel(controller) {
+      // Verwijder controller bij disconnect
+      sessions.get(sessionId)?.delete(controller);
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
+
+// Helper functie om events te broadcasen
+export function broadcastToSession(sessionId: string, event: SSEEvent) {
+  const controllers = sessions.get(sessionId);
+  if (!controllers) return;
+
+  const encoder = new TextEncoder();
+  const message = `data: ${JSON.stringify(event)}\n\n`;
+
+  controllers.forEach((controller) => {
+    try {
+      controller.enqueue(encoder.encode(message));
+    } catch {
+      // Controller is gesloten, verwijderen
+      controllers.delete(controller);
+    }
+  });
+}
+
+type SSEEvent = {
+  type: 'item:created' | 'item:updated' | 'item:deleted' |
+        'vote:added' | 'vote:removed' |
+        'discussion:updated' | 'phase:changed' |
+        'report:generated' | 'participant:joined' | 'participant:left';
+  payload: unknown;
+};
+```
+
+**Client-side SSE Hook:**
+
+```typescript
+// src/hooks/use-sse.ts
+'use client';
+
+import { useEffect, useCallback, useRef } from 'react';
+
+type SSEEvent = {
+  type: string;
+  payload: unknown;
 };
 
-type Storage = {
-  items: LiveList<RetrospectiveItem>;
-  votes: LiveMap<string, string[]>;
-  phase: "input" | "voting" | "discussion" | "completed";
-  report: {
-    content: string | null;
-    isGenerating: boolean;
-    generatedAt: string | null;
-  };
-};
+export function useSSE(
+  sessionId: string,
+  onEvent: (event: SSEEvent) => void
+) {
+  const eventSourceRef = useRef<EventSource | null>(null);
 
-export const {
-  RoomProvider,
-  useOthers,
-  useUpdateMyPresence,
-  useStorage,
-  useMutation,
-  useBroadcastEvent,
-  useEventListener,
-} = createRoomContext<Presence, Storage>(client);
+  const connect = useCallback(() => {
+    const eventSource = new EventSource(`/api/retrospective/${sessionId}/stream`);
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data) as SSEEvent;
+        onEvent(data);
+      } catch (error) {
+        console.error('SSE parse error:', error);
+      }
+    };
+
+    eventSource.onerror = () => {
+      eventSource.close();
+      // Reconnect na 3 seconden
+      setTimeout(connect, 3000);
+    };
+
+    eventSourceRef.current = eventSource;
+  }, [sessionId, onEvent]);
+
+  useEffect(() => {
+    connect();
+
+    return () => {
+      eventSourceRef.current?.close();
+    };
+  }, [connect]);
+}
 ```
 
 ---
 
-### TO4: Rapport Tab Component (v0.dev Gegenereerd)
-
-Voorbeeld structuur voor rapport tab component:
+### TO4: Retrospective State Hook
 
 ```typescript
-// src/components/features/retrospective/report-tab.tsx
-"use client";
+// src/hooks/use-retrospective.ts
+'use client';
 
-import { useStorage } from "@/lib/liveblocks/config";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Download, Copy, RefreshCw, FileText } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { useState, useCallback } from 'react';
+import { useSSE } from './use-sse';
 
-export function ReportTab({ sessionId }: { sessionId: string }) {
-  const report = useStorage((root) => root.report);
+type RetrospectiveState = {
+  items: RetrospectiveItem[];
+  votes: Vote[];
+  participants: Participant[];
+  report: Report | null;
+  phase: 'input' | 'voting' | 'discussion' | 'completed';
+};
 
-  if (report.isGenerating) {
-    return <ReportSkeleton />;
-  }
+export function useRetrospective(sessionId: string, initialData: RetrospectiveState) {
+  const [state, setState] = useState<RetrospectiveState>(initialData);
 
-  if (!report.content) {
-    return <GenerateReportPrompt sessionId={sessionId} />;
-  }
+  const handleSSEEvent = useCallback((event: SSEEvent) => {
+    switch (event.type) {
+      case 'item:created':
+        setState((prev) => ({
+          ...prev,
+          items: [...prev.items, event.payload as RetrospectiveItem],
+        }));
+        break;
 
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Retrospective Rapport</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Copy className="w-4 h-4 mr-2" />
-            Kopiëren
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
-          </Button>
-        </div>
-      </div>
+      case 'item:deleted':
+        setState((prev) => ({
+          ...prev,
+          items: prev.items.filter((item) => item.id !== event.payload.id),
+        }));
+        break;
 
-      <Card>
-        <CardContent className="prose prose-sm max-w-none p-6">
-          <ReactMarkdown>{report.content}</ReactMarkdown>
-        </CardContent>
-      </Card>
+      case 'vote:added':
+        setState((prev) => ({
+          ...prev,
+          votes: [...prev.votes, event.payload as Vote],
+        }));
+        break;
 
-      <p className="text-sm text-muted-foreground">
-        Gegenereerd op: {new Date(report.generatedAt).toLocaleString('nl-NL')}
-      </p>
-    </div>
-  );
+      case 'report:generated':
+        setState((prev) => ({
+          ...prev,
+          report: event.payload as Report,
+        }));
+        break;
+
+      case 'phase:changed':
+        setState((prev) => ({
+          ...prev,
+          phase: event.payload.phase,
+        }));
+        break;
+
+      case 'participant:joined':
+        setState((prev) => ({
+          ...prev,
+          participants: [...prev.participants, event.payload as Participant],
+        }));
+        break;
+
+      // ... andere event handlers
+    }
+  }, []);
+
+  useSSE(sessionId, handleSSEEvent);
+
+  return state;
 }
 ```
 
@@ -552,26 +685,33 @@ export function ReportTab({ sessionId }: { sessionId: string }) {
 
 ```text
 /api/retrospective
-  POST   /                     - Nieuwe sessie aanmaken
-  GET    /:id                  - Sessie ophalen
-  PATCH  /:id                  - Sessie bijwerken (status, instellingen)
-  DELETE /:id                  - Sessie verwijderen
+  POST   /                         - Nieuwe sessie aanmaken
+
+/api/retrospective/:id
+  GET    /                         - Sessie ophalen met alle data
+  PATCH  /                         - Sessie bijwerken (status, instellingen)
+  DELETE /                         - Sessie verwijderen
+
+/api/retrospective/:id/stream
+  GET    /                         - SSE endpoint voor real-time updates
 
 /api/retrospective/:id/items
-  POST   /                     - Item toevoegen
-  PATCH  /:itemId              - Item bijwerken
-  DELETE /:itemId              - Item verwijderen
+  POST   /                         - Item toevoegen (broadcast: item:created)
+  PATCH  /:itemId                  - Item bijwerken (broadcast: item:updated)
+  DELETE /:itemId                  - Item verwijderen (broadcast: item:deleted)
 
 /api/retrospective/:id/votes
-  POST   /                     - Stem toevoegen
-  DELETE /:itemId              - Stem verwijderen
+  POST   /                         - Stem toevoegen (broadcast: vote:added)
+  DELETE /:itemId                  - Stem verwijderen (broadcast: vote:removed)
 
 /api/retrospective/:id/report
-  POST   /                     - AI rapport genereren & opslaan
-  GET    /                     - Rapport ophalen
+  POST   /                         - AI rapport genereren (broadcast: report:generated)
+  GET    /                         - Rapport ophalen
 
-/api/liveblocks-auth
-  POST   /                     - Liveblocks authenticatie
+/api/retrospective/:id/participants
+  POST   /                         - Deelnemer registreren (broadcast: participant:joined)
+  DELETE /:userId                  - Deelnemer verwijderen (broadcast: participant:left)
+  PATCH  /heartbeat                - Heartbeat update
 ```
 
 ---
@@ -585,10 +725,6 @@ Vereiste environment variables:
 POSTGRES_URL=
 POSTGRES_PRISMA_URL=
 POSTGRES_URL_NON_POOLING=
-
-# Liveblocks
-LIVEBLOCKS_SECRET_KEY=sk_...
-NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY=pk_...
 
 # OpenAI
 OPENAI_API_KEY=sk-...
@@ -604,14 +740,16 @@ NEXT_PUBLIC_APP_URL=https://scrumkit.vercel.app
 Gebruik de volgende prompts op [v0.dev](https://v0.dev) voor het genereren van professionele componenten:
 
 **Retrospective Board:**
-```
+
+```text
 Maak een Kanban-achtig bord met 3 kolommen: "Ging Goed" (groen), "Kan Beter" (oranje), "Actiepunten" (blauw).
 Elke kolom bevat kaarten met tekst en een stem-counter. Gebruik Shadcn/UI componenten en Tailwind.
 Voeg een "+" knop toe per kolom om nieuwe items toe te voegen.
 ```
 
 **Rapport Tab:**
-```
+
+```text
 Maak een rapport weergave component met:
 - Header met titel "Retrospective Rapport" en actieknoppen (kopiëren, download PDF)
 - Markdown content gebied met mooie typografie
@@ -622,7 +760,8 @@ Gebruik Shadcn/UI en Tailwind. Nederlandse labels.
 ```
 
 **Presence Avatars:**
-```
+
+```text
 Maak een avatar stack component die online gebruikers toont.
 - Circulaire avatars met initialen
 - Overlappende layout (max 5 zichtbaar, "+3" indicator voor meer)
@@ -638,8 +777,9 @@ Gebruik Shadcn/UI Avatar component.
 - API keys alleen server-side gebruiken
 - Input sanitization voor alle gebruikerscontent
 - Rate limiting op API endpoints
-- Liveblocks authenticatie voor room toegang
-- Sessie toegang valideren (alleen teamleden met link)
+- Sessie toegang valideren via sessie ID in URL (link-based access)
+- SSE endpoints beveiligen tegen misbruik
+- Heartbeat timeout voor automatische participant cleanup
 
 ---
 
@@ -664,7 +804,7 @@ Gebruik Shadcn/UI Avatar component.
 
 - [ ] Gebruiker kan een nieuwe retrospective sessie aanmaken en een deelbare link ontvangen
 - [ ] Meerdere gebruikers kunnen tegelijkertijd items toevoegen die real-time zichtbaar zijn voor alle deelnemers
-- [ ] Liveblocks presence toont welke teamleden online zijn
+- [ ] SSE-gebaseerde presence toont welke teamleden online zijn
 - [ ] Gebruikers kunnen stemmen uitbrengen met correct stemlimiet beheer
 - [ ] Items worden automatisch gesorteerd op stemtelling
 - [ ] Discussie notities kunnen worden toegevoegd en zijn real-time zichtbaar
@@ -672,7 +812,7 @@ Gebruik Shadcn/UI Avatar component.
 - [ ] AI genereert een coherent Nederlandstalig rapport na afloop van de sessie
 - [ ] **Rapport wordt getoond in dedicated tab**
 - [ ] **Rapport wordt opgeslagen in database**
-- [ ] **Rapport is real-time zichtbaar voor alle deelnemers in de sessie**
+- [ ] **Rapport is real-time zichtbaar voor alle deelnemers via SSE**
 - [ ] Rapport is downloadbaar in Markdown en PDF formaat
 
 ### Technische Acceptatiecriteria
@@ -681,7 +821,8 @@ Gebruik Shadcn/UI Avatar component.
 - [ ] Turbopack wordt gebruikt als bundler
 - [ ] Deployment naar Vercel werkt zonder fouten
 - [ ] Vercel Postgres connectie werkt correct
-- [ ] Liveblocks real-time synchronisatie werkt (inclusief rapport updates)
+- [ ] SSE real-time synchronisatie werkt correct
+- [ ] SSE reconnect werkt bij verbindingsverlies
 - [ ] Database migraties draaien succesvol
 - [ ] Alle API endpoints retourneren correcte HTTP status codes
 - [ ] TypeScript compileert zonder fouten
@@ -691,7 +832,7 @@ Gebruik Shadcn/UI Avatar component.
 ### Performance Criteria
 
 - [ ] Initiële pagina laadtijd < 3 seconden
-- [ ] Real-time updates binnen 500ms (Liveblocks)
+- [ ] SSE event delivery < 500ms
 - [ ] AI rapport generatie < 30 seconden
 - [ ] Ondersteunt minimaal 10 gelijktijdige gebruikers per sessie
 
@@ -701,10 +842,9 @@ Gebruik Shadcn/UI Avatar component.
 
 - [Next.js 16 Release Notes](https://nextjs.org/blog/next-16)
 - [Next.js 16 Upgrade Guide](https://nextjs.org/docs/app/guides/upgrading/version-16)
+- [MDN: Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
+- [Next.js Streaming with SSE](https://nextjs.org/docs/app/building-your-application/routing/route-handlers#streaming)
 - [v0.dev - Vercel AI UI Generator](https://v0.dev)
-- [v0.dev Review 2025](https://skywork.ai/blog/vercel-v0-review-2025-ai-ui-code-generation-nextjs/)
-- [Liveblocks Starter Kit - Vercel](https://vercel.com/templates/next.js/liveblocks-starter-kit)
-- [Liveblocks + Vercel Postgres Sync](https://liveblocks.io/docs/guides/how-to-synchronize-your-liveblocks-storage-document-data-to-a-vercel-postgres-database)
 - [Vercel Postgres Documentatie](https://vercel.com/docs/storage/vercel-postgres)
 - [Drizzle ORM Documentatie](https://orm.drizzle.team/)
 - [Shadcn/UI Next.js Installatie](https://ui.shadcn.com/docs/installation/next)
