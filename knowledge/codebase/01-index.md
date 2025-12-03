@@ -4,11 +4,10 @@ This folder contains foundational project knowledge including architecture, data
 
 ## Available Documentation
 
-No documentation has been added yet. Consider adding:
-- Architecture documentation
-- Core business processes (sequence diagrams)
-- Data models (ERD diagrams)
-- Architecture Decision Records (ADRs)
+### Architecture Overview
+**File:** @knowledge/codebase/02-architecture.md
+**Keywords:** architecture, tech stack, directory structure, data model, SSE, real-time, API routes
+**When to use:** When you need to understand the overall application structure, tech stack, data models, or how real-time updates work.
 
 ## Usage
 
