@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(bunx shadcn@latest add:*)",
+      "Bash(bun add:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(bun remove:*)"
     ],
     "deny": [],
     "ask": []

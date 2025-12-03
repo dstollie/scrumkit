@@ -4,7 +4,10 @@ This index helps determine which implementation guidelines to load based on the 
 
 ## Available Guidelines
 
-No guidelines have been added yet. Add guidelines as needed based on your project requirements.
+### SSE Real-time Patterns
+**File:** @knowledge/implementation-guidelines/02-sse-real-time-patterns.md
+**Keywords:** SSE, Server-Sent Events, real-time, websocket, events, broadcast, pub/sub
+**When to use:** When implementing real-time features, adding new event types, or scaling the SSE infrastructure.
 
 ## Loading Logic
 
