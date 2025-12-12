@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(bun create:*)",
+      "Bash(bun run typecheck:*)",
+      "Bash(bun run lint:*)",
+      "Bash(bun install)",
+      "Bash(bunx shadcn@latest init:*)",
+      "Bash(bunx:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(bun add:*)",
+      "Bash(git add:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []
